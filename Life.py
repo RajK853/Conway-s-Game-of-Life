@@ -3,9 +3,7 @@ import pygame, sys, random, time
 from pygame.locals import *
 
 def blankCell():        # Returns a blank list 
-    bCell = []
-    for i in range(CELLS):
-        bCell.append([" "]*CELLS)
+    bCell = [[" "]*CELLS for i in range(CELLS)]
     return bCell
 
 def highlight(block):       # Highlights the block
@@ -47,13 +45,12 @@ def makePattern(cell):      # Draws the cell pattern on the screen
                     for j in range(len(tCell[i])):
                         tempCell = pygame.Rect(i*CELLSIZE+MARGIN, j*CELLSIZE+MARGIN, CELLSIZE-MARGIN, CELLSIZE-MARGIN) 
                         if tempCell.colliderect((x, y, 0, 0)):
-                            if cell[i][j] == "o":
-                                cell[i][j] = " "
-                            else:
-                                cell[i][j] = "o"
+                            if cell[i][j] == "o": cell[i][j] = " "
+                            else: cell[i][j] = "o"
         if HIGHLIGHT:                
             highlight(block)
         pygame.display.update()
+        fpsClock.tick(FPS)
 
 def main(cell):
     while True:
@@ -62,10 +59,8 @@ def main(cell):
         drawCell(cell)                              # draws board in its current state
         aCells = getAliveCells(cell)        # Alive cells
         dCells = getDeadCells(aCells)   # Dead Cells
-        for x, y in aCells:                     
-            cell[x][y] = "o"                            # sets alive cells
-        for x, y in dCells:
-            cell[x][y] = " "                            # sets dead cells
+        for x, y in aCells: cell[x][y] = "o"                            # sets alive cells
+        for x, y in dCells: cell[x][y] = " "                            # sets dead cells
         fontObj = pygame.font.SysFont("Comic Sans MS", 15)
         text = fontObj.render(("Alive: %s       Dead: %s" % deadAlive(cell)), True, BLACK)
         textRect = text.get_rect()
@@ -87,12 +82,9 @@ def main(cell):
 def deadAlive(cell):        # Returns current number of dead and alive cells
     nAlive = 0
     nDead = 0
-    for i in range(len(cell)):
-        for j in cell[i]:
-            if j == "o":
-                nAlive += 1
-            if j == " ":
-                nDead += 1
+    for row in cell:
+        nAlive += row.count("o")
+        nDead += row.count(" ")
     return nAlive, nDead
 
 def alive(x, y):    #draws alive cells
@@ -101,22 +93,6 @@ def alive(x, y):    #draws alive cells
 
 def dead(x, y):     #draws dead cells
     pygame.draw.rect(windowSurface, WHITE, (x, y, CELLSIZE, CELLSIZE))
-
-def validRow(row):
-    if not row.isdigit():
-        return False
-    if int(row) > 30 or int(row) < 0:
-        return False
-    return True
-    
-def makeCell():         # Converts the pattern into table-like list
-    data = getPattern()     # Returns the pattern from the file in the form of list of lists with each line as a single list item as [["   oooo   "], . . . . . .["        "]]
-    dataList = []           # Converts our list of pattern into from [["  oooo  "], . . . . . . ["        "]] to [[" ", " ", "o", "o", "o", "o", " ", " "], . . . . . . [" ", " ", " ", " "," ", " ", " ", " "]] so that later we can change the value of items in the list.
-    for i in range(len(data)):
-        dataList.append([])     # Adds an empty list which can be accessed with the code dataList[n] where n = 0, 1, 2, 3. . . . .(len(n) - 1)
-        for j in data[i]:
-            dataList[i].append(j)   # Adds the item in the above empty list.
-    return dataList
 
 def drawCell(cell):    # Prints the whole cell
     top = 0
@@ -156,7 +132,7 @@ def getDeadCells(aCells):     # Returns dead cells' coordinates
 # Functions end and program starts here
 pygame.init()
 
-FPS = 7
+FPS = 12
 fpsClock = pygame.time.Clock()
 CELLSIZE = 9     # Size of each cell
 MARGIN = 2       # Margin among cells
